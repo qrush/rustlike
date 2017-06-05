@@ -71,6 +71,9 @@ fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool 
         Key { code: Down, .. } | Key { printable: 'j', .. } => {
             move_position(*player_y + 1, player_y, SCREEN_HEIGHT);
         }
+        Key { printable: 'J', .. } => {
+            move_position(SCREEN_HEIGHT - 1, player_y, SCREEN_HEIGHT);
+        }
         Key { code: Left, .. } | Key { printable: 'h', .. } => {
             move_position(*player_x - 1, player_x, SCREEN_HEIGHT);
         }
