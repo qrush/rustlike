@@ -21,17 +21,16 @@ fn main() {
 
     let mut player_x = 0;
     let mut player_y = 0;
-    let mut firstRun = false;
+    let mut first_run = false;
 
     while !root.window_closed() {
         root.set_default_foreground(colors::WHITE);
         root.flush();
 
         draw(&mut root, player_x, player_y, ' ');
-
-        if !firstRun {
+        if !first_run {
             draw_player(&mut root, player_x, player_y);
-            firstRun = true;
+            first_run = true;
         } else {
             let exit = handle_keys(&mut root, &mut player_x, &mut player_y);
             draw_player(&mut root, player_x, player_y);
@@ -51,6 +50,12 @@ fn draw_player(root: &mut Root, player_x: i32, player_y: i32) {
     draw(root, player_x, player_y, '@');
 }
 
+fn move_position(new_pos: i32, pos: &mut i32, max_pos: i32) {
+    if max_pos >= new_pos && new_pos >= 0 {
+        *pos = new_pos;
+    }
+}
+
 fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool {
     let key = root.wait_for_keypress(true);
 
@@ -60,10 +65,18 @@ fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool 
             root.set_fullscreen(!fullscreen);
         }
         Key { code: Escape, .. } => return true,
-        Key { code: Up, .. } => *player_y -= 1,
-        Key { code: Down, .. } => *player_y += 1,
-        Key { code: Left, .. } => *player_x -= 1,
-        Key { code: Right, .. } => *player_x += 1,
+        Key { code: Up, .. } => {
+            move_position(*player_y - 1, player_y, SCREEN_HEIGHT);
+        }
+        Key { code: Down, .. } => {
+            move_position(*player_y + 1, player_y, SCREEN_HEIGHT);
+        }
+        Key { code: Left, .. } => {
+            move_position(*player_x - 1, player_x, SCREEN_HEIGHT);
+        }
+        Key { code: Right, .. } => {
+            move_position(*player_x + 1, player_x, SCREEN_HEIGHT);
+        }
         _ => {},
     }
     false
