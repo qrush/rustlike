@@ -19,21 +19,36 @@ fn main() {
 
     tcod::system::set_fps(LIMIT_FPS);
 
-    let mut player_x = SCREEN_WIDTH / 2;
-    let mut player_y = SCREEN_HEIGHT / 2;
+    let mut player_x = 0;
+    let mut player_y = 0;
+    let mut firstRun = false;
 
     while !root.window_closed() {
         root.set_default_foreground(colors::WHITE);
         root.flush();
 
-        root.put_char(player_x, player_y, ' ', BackgroundFlag::None);
-        let exit = handle_keys(&mut root, &mut player_x, &mut player_y);
-        root.put_char(player_x, player_y, '@', BackgroundFlag::None);
+        draw(&mut root, player_x, player_y, ' ');
 
-        if exit {
-            break
+        if !firstRun {
+            draw_player(&mut root, player_x, player_y);
+            firstRun = true;
+        } else {
+            let exit = handle_keys(&mut root, &mut player_x, &mut player_y);
+            draw_player(&mut root, player_x, player_y);
+
+            if exit {
+                break
+            }
         }
     }
+}
+
+fn draw(root: &mut Root, x: i32, y: i32, who: char) {
+    root.put_char(x, y, who, BackgroundFlag::None);
+}
+
+fn draw_player(root: &mut Root, player_x: i32, player_y: i32) {
+    draw(root, player_x, player_y, '@');
 }
 
 fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool {
