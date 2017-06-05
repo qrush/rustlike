@@ -65,16 +65,16 @@ fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool 
             root.set_fullscreen(!fullscreen);
         }
         Key { code: Escape, .. } => return true,
-        Key { code: Up, .. } => {
+        Key { code: Up, .. } | Key { printable: 'k', .. } => {
             move_position(*player_y - 1, player_y, SCREEN_HEIGHT);
         }
-        Key { code: Down, .. } => {
+        Key { code: Down, .. } | Key { printable: 'j', .. } => {
             move_position(*player_y + 1, player_y, SCREEN_HEIGHT);
         }
-        Key { code: Left, .. } => {
+        Key { code: Left, .. } | Key { printable: 'h', .. } => {
             move_position(*player_x - 1, player_x, SCREEN_HEIGHT);
         }
-        Key { code: Right, .. } => {
+        Key { code: Right, .. } | Key { printable: 'l', .. }  => {
             move_position(*player_x + 1, player_x, SCREEN_HEIGHT);
         }
         _ => {},
