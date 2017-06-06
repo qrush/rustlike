@@ -1,16 +1,13 @@
 extern crate tcod;
 
 mod rustlike;
+use rustlike::*;
 
 use tcod::console::*;
 use tcod::colors;
 use tcod::colors::Color;
 use tcod::input::Key;
 use tcod::input::KeyCode::*;
-
-use rustlike::*;
-use rustlike::map::*;
-use rustlike::object::*;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color { r: 50, g: 50, b: 150 };
