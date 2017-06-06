@@ -2,12 +2,50 @@ extern crate tcod;
 
 use tcod::console::*;
 use tcod::colors;
+use tcod::colors::Color;
 use tcod::input::Key;
 use tcod::input::KeyCode::*;
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 const LIMIT_FPS: i32 = 20;
+
+struct Object {
+    x: i32,
+    y: i32,
+    display: char,
+    color: Color,
+}
+
+impl Object {
+    pub fn new(x: i32, y: i32, display: char, color: Color) -> Self {
+        Object {
+            x: x,
+            y: y,
+            display: display,
+            color: color,
+        }
+    }
+
+    pub fn move_by(&mut self, dx: i32, dy: i32) {
+        if self.x + dx >= 0 && self.x + dx <= SCREEN_WIDTH - 1 {
+            self.x += dx;
+        }
+
+        if self.y + dy >= 0 && self.y + dy <= SCREEN_HEIGHT - 1{
+            self.y += dy;
+        }
+    }
+
+    pub fn draw(&self, con: &mut Console) {
+        con.set_default_foreground(self.color);
+        con.put_char(self.x, self.y, self.display, BackgroundFlag::None);
+    }
+
+    pub fn clear(&self, con: &mut Console) {
+        con.put_char(self.x, self.y, ' ', BackgroundFlag::None);
+    }
+}
 
 fn main() {
     let mut root = Root::initializer()
@@ -17,48 +55,34 @@ fn main() {
       .title("Rustlike v1")
       .init();
     let mut con = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
+    con.set_default_foreground(colors::WHITE);
 
     tcod::system::set_fps(LIMIT_FPS);
 
-    let mut player_x = 0;
-    let mut player_y = 0;
-    let mut first_run = false;
+    let player = Object::new(0, 0, '@', colors::WHITE);
+    let npc = Object::new(10, 10, '&', colors::YELLOW);
+    let mut objects = [player, npc];
 
     while !root.window_closed() {
-        con.set_default_foreground(colors::WHITE);
-        root.flush();
-
-        draw(&mut con, player_x, player_y, ' ');
-        if !first_run {
-            draw_player(&mut con, player_x, player_y);
-            first_run = true;
-        } else {
-            let exit = handle_keys(&mut root, &mut player_x, &mut player_y);
-            draw_player(&mut con, player_x, player_y);
-
-            if exit {
-                break
-            }
+        for object in &objects {
+            object.draw(&mut con);
         }
         blit(&mut con, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
+        root.flush();
+
+        for object in &objects {
+            object.clear(&mut con);
+        }
+
+        let player = &mut objects[0];
+        let exit = handle_keys(&mut root, player);
+        if exit {
+            break
+        }
     }
 }
 
-fn draw(con: &mut Offscreen, x: i32, y: i32, who: char) {
-    con.put_char(x, y, who, BackgroundFlag::None);
-}
-
-fn draw_player(con: &mut Offscreen, player_x: i32, player_y: i32) {
-    draw(con, player_x, player_y, '@');
-}
-
-fn move_position(new_pos: i32, pos: &mut i32, max_pos: i32) {
-    if max_pos >= new_pos && new_pos >= 0 {
-        *pos = new_pos;
-    }
-}
-
-fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool {
+fn handle_keys(root: &mut Root, player: &mut Object) -> bool {
     let key = root.wait_for_keypress(true);
 
     match key {
@@ -68,19 +92,19 @@ fn handle_keys(root: &mut Root, player_x: &mut i32, player_y: &mut i32) -> bool 
         }
         Key { code: Escape, .. } => return true,
         Key { code: Up, .. } | Key { printable: 'k', .. } => {
-            move_position(*player_y - 1, player_y, SCREEN_HEIGHT);
+            player.move_by(0, -1);
         }
         Key { code: Down, .. } | Key { printable: 'j', .. } => {
-            move_position(*player_y + 1, player_y, SCREEN_HEIGHT);
+            player.move_by(0, 1);
         }
-        Key { printable: 'J', .. } => {
-            move_position(SCREEN_HEIGHT - 1, player_y, SCREEN_HEIGHT);
-        }
+        //Key { printable: 'J', .. } => {
+        //    player.move_by(0, SCREEN_HEIGHT - 1);
+        //}
         Key { code: Left, .. } | Key { printable: 'h', .. } => {
-            move_position(*player_x - 1, player_x, SCREEN_HEIGHT);
+            player.move_by(-1, 0);
         }
         Key { code: Right, .. } | Key { printable: 'l', .. }  => {
-            move_position(*player_x + 1, player_x, SCREEN_HEIGHT);
+            player.move_by(1, 0);
         }
         _ => {},
     }
