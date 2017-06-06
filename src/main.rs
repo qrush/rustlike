@@ -33,12 +33,20 @@ impl Object {
         }
     }
 
-    pub fn move_by(&mut self, dx: i32, dy: i32) {
-        if self.x + dx >= 0 && self.x + dx <= SCREEN_WIDTH - 1 {
+    pub fn move_by(&mut self, dx: i32, dy: i32, map: &Map) {
+        let new_x = self.x + dx;
+        let new_y = self.y + dy;
+        let blocked = map[new_x as usize][new_y as usize].blocked;
+
+        if blocked {
+            return
+        }
+
+        if new_x >= 0 && new_x <= SCREEN_WIDTH - 1 {
             self.x += dx;
         }
 
-        if self.y + dy >= 0 && self.y + dy <= SCREEN_HEIGHT - 1{
+        if new_y >= 0 && new_y <= SCREEN_HEIGHT - 1 {
             self.y += dy;
         }
     }
@@ -94,7 +102,7 @@ fn render_all(root: &mut Root, con: &mut Offscreen, objects: &[Object], map: &Ma
         }
     }
     // reset
-    blit(con, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), root, (0, 0), 1.0, 1.0);
+    blit(con, (0, 0), (MAP_WIDTH, MAP_HEIGHT), root, (0, 0), 1.0, 1.0);
     root.flush();
     for object in objects {
         object.clear(con);
@@ -108,7 +116,7 @@ fn main() {
       .size(SCREEN_WIDTH, SCREEN_HEIGHT)
       .title("Rustlike v1")
       .init();
-    let mut con = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
+    let mut con = Offscreen::new(MAP_WIDTH, MAP_HEIGHT);
     con.set_default_foreground(colors::WHITE);
 
     tcod::system::set_fps(LIMIT_FPS);
@@ -116,20 +124,20 @@ fn main() {
     let player = Object::new(0, 0, '@', colors::WHITE);
     let npc = Object::new(10, 10, '&', colors::YELLOW);
     let mut objects = [player, npc];
-    let mut map = make_map();
+    let map = make_map();
 
     while !root.window_closed() {
-        render_all(&mut root, &mut con, &mut objects, &mut map);
+        render_all(&mut root, &mut con, &mut objects, &map);
 
         let player = &mut objects[0];
-        let exit = handle_keys(&mut root, player);
+        let exit = handle_keys(&mut root, player, &map);
         if exit {
             break
         }
     }
 }
 
-fn handle_keys(root: &mut Root, player: &mut Object) -> bool {
+fn handle_keys(root: &mut Root, player: &mut Object, map: &Map) -> bool {
     let key = root.wait_for_keypress(true);
 
     match key {
@@ -139,19 +147,19 @@ fn handle_keys(root: &mut Root, player: &mut Object) -> bool {
         }
         Key { code: Escape, .. } => return true,
         Key { code: Up, .. } | Key { printable: 'k', .. } => {
-            player.move_by(0, -1);
+            player.move_by(0, -1, map);
         }
         Key { code: Down, .. } | Key { printable: 'j', .. } => {
-            player.move_by(0, 1);
+            player.move_by(0, 1, map);
         }
         //Key { printable: 'J', .. } => {
         //    player.move_by(0, SCREEN_HEIGHT - 1);
         //}
         Key { code: Left, .. } | Key { printable: 'h', .. } => {
-            player.move_by(-1, 0);
+            player.move_by(-1, 0, map);
         }
         Key { code: Right, .. } | Key { printable: 'l', .. }  => {
-            player.move_by(1, 0);
+            player.move_by(1, 0, map);
         }
         _ => {},
     }
