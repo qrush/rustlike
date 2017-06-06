@@ -1,86 +1,19 @@
 extern crate tcod;
 
+mod rustlike;
+
 use tcod::console::*;
 use tcod::colors;
 use tcod::colors::Color;
 use tcod::input::Key;
 use tcod::input::KeyCode::*;
 
-const SCREEN_WIDTH: i32 = 80;
-const SCREEN_HEIGHT: i32 = 50;
-const MAP_WIDTH: i32 = 80;
-const MAP_HEIGHT: i32 = 45;
-const LIMIT_FPS: i32 = 20;
+use rustlike::*;
+use rustlike::map::*;
+use rustlike::object::*;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color { r: 50, g: 50, b: 150 };
-
-#[derive(Debug)]
-struct Object {
-    x: i32,
-    y: i32,
-    display: char,
-    color: Color,
-}
-
-impl Object {
-    pub fn new(x: i32, y: i32, display: char, color: Color) -> Self {
-        Object {
-            x: x,
-            y: y,
-            display: display,
-            color: color,
-        }
-    }
-
-    pub fn move_by(&mut self, dx: i32, dy: i32, map: &Map) {
-        let new_x = self.x + dx;
-        let new_y = self.y + dy;
-
-        if new_x >= 0 &&
-           new_x <= SCREEN_WIDTH - 1 &&
-           new_y >= 0 &&
-           new_y <= SCREEN_HEIGHT - 1 &&
-           !map[new_x as usize][new_y as usize].blocked {
-            self.x += dx;
-            self.y += dy;
-        }
-    }
-
-    pub fn draw(&self, con: &mut Console) {
-        con.set_default_foreground(self.color);
-        con.put_char(self.x, self.y, self.display, BackgroundFlag::None);
-    }
-
-    pub fn clear(&self, con: &mut Console) {
-        con.put_char(self.x, self.y, ' ', BackgroundFlag::None);
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct Tile {
-    blocked: bool,
-    block_sight: bool,
-}
-
-impl Tile {
-    pub fn empty() -> Self {
-        Tile { blocked: false, block_sight: false }
-    }
-
-    pub fn wall() -> Self {
-        Tile { blocked: true, block_sight: true }
-    }
-}
-
-type Map = Vec<Vec<Tile>>;
-
-fn make_map() -> Map {
-    let mut map = vec![vec![Tile::empty(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
-    map[30][22] = Tile::wall();
-    map[50][22] = Tile::wall();
-    map
-}
 
 fn render_all(root: &mut Root, con: &mut Offscreen, objects: &[Object], map: &Map) {
     for object in objects {
