@@ -36,17 +36,13 @@ impl Object {
     pub fn move_by(&mut self, dx: i32, dy: i32, map: &Map) {
         let new_x = self.x + dx;
         let new_y = self.y + dy;
-        let blocked = map[new_x as usize][new_y as usize].blocked;
 
-        if blocked {
-            return
-        }
-
-        if new_x >= 0 && new_x <= SCREEN_WIDTH - 1 {
+        if new_x >= 0 &&
+           new_x <= SCREEN_WIDTH - 1 &&
+           new_y >= 0 &&
+           new_y <= SCREEN_HEIGHT - 1 &&
+           !map[new_x as usize][new_y as usize].blocked {
             self.x += dx;
-        }
-
-        if new_y >= 0 && new_y <= SCREEN_HEIGHT - 1 {
             self.y += dy;
         }
     }
