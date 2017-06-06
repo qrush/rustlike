@@ -16,6 +16,7 @@ fn main() {
       .size(SCREEN_WIDTH, SCREEN_HEIGHT)
       .title("Rustlike v1")
       .init();
+    let mut con = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     tcod::system::set_fps(LIMIT_FPS);
 
@@ -24,30 +25,31 @@ fn main() {
     let mut first_run = false;
 
     while !root.window_closed() {
-        root.set_default_foreground(colors::WHITE);
+        con.set_default_foreground(colors::WHITE);
         root.flush();
 
-        draw(&mut root, player_x, player_y, ' ');
+        draw(&mut con, player_x, player_y, ' ');
         if !first_run {
-            draw_player(&mut root, player_x, player_y);
+            draw_player(&mut con, player_x, player_y);
             first_run = true;
         } else {
             let exit = handle_keys(&mut root, &mut player_x, &mut player_y);
-            draw_player(&mut root, player_x, player_y);
+            draw_player(&mut con, player_x, player_y);
 
             if exit {
                 break
             }
         }
+        blit(&mut con, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
     }
 }
 
-fn draw(root: &mut Root, x: i32, y: i32, who: char) {
-    root.put_char(x, y, who, BackgroundFlag::None);
+fn draw(con: &mut Offscreen, x: i32, y: i32, who: char) {
+    con.put_char(x, y, who, BackgroundFlag::None);
 }
 
-fn draw_player(root: &mut Root, player_x: i32, player_y: i32) {
-    draw(root, player_x, player_y, '@');
+fn draw_player(con: &mut Offscreen, player_x: i32, player_y: i32) {
+    draw(con, player_x, player_y, '@');
 }
 
 fn move_position(new_pos: i32, pos: &mut i32, max_pos: i32) {
